@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="PassPredictor — Generate likely password candidates from personal details. Runs entirely offline in your browser.">
-  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0c0f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>PassPredictor — Password Recovery Tool</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -51,6 +51,22 @@
         <span>Nothing sent anywhere</span>
         <span class="trust-dot"></span>
         <span>Free forever</span>
+      </div>
+      <div class="hero-stats-row">
+        <div class="hero-stat">
+          <span class="hero-stat-num">50K+</span>
+          <span class="hero-stat-lbl">combinations</span>
+        </div>
+        <div class="hero-stat-sep"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">0</span>
+          <span class="hero-stat-lbl">data sent</span>
+        </div>
+        <div class="hero-stat-sep"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">Free</span>
+          <span class="hero-stat-lbl">forever</span>
+        </div>
       </div>
       <button class="btn-primary" id="heroScroll">
         Start recovery
@@ -175,7 +191,7 @@
       </div>
 
       <!-- Panel 1: Connections -->
-      <div class="step-panel hidden" id="panel-1" role="tabpanel">
+      <div class="step-panel" id="panel-1" role="tabpanel">
         <div class="form-grid">
           <div class="field-group">
             <label class="field-label" for="pets">Pet name(s)</label>
@@ -213,7 +229,7 @@
       </div>
 
       <!-- Panel 2: Password Hints -->
-      <div class="step-panel hidden" id="panel-2" role="tabpanel">
+      <div class="step-panel" id="panel-2" role="tabpanel">
         <div class="partial-group">
           <p class="field-label">Part of the password you remember</p>
           <div class="partial-row">
@@ -263,7 +279,7 @@
       </div>
 
       <!-- Panel 3: Options -->
-      <div class="step-panel hidden" id="panel-3" role="tabpanel">
+      <div class="step-panel" id="panel-3" role="tabpanel">
         <div class="opts-grid">
           <label class="opt-row">
             <input type="checkbox" id="optLeet" checked>
@@ -341,7 +357,7 @@
           </button>
           <button class="btn-generate" id="generateBtn">
             Generate passwords
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="13 2 13 9 20 9"/><path d="M19.5 14.5A7 7 0 1 1 10 10l3-7 6.5 7z" style="display:none"/><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
           </button>
         </div>
       </div>
@@ -442,7 +458,7 @@
     <h2>Official recovery guides</h2>
     <p class="guides-sub">Always try the official recovery flow first — it has higher success rates than manual attempts.</p>
     <div class="guides-grid" id="guidesGrid">
-      <div class="guide-card" data-service="gmail">
+      <div class="guide-card" data-service="gmail" data-reveal data-reveal-delay="0">
         <div class="guide-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         </div>
@@ -456,7 +472,7 @@
         </ol>
         <p class="guide-tip">Tip: Try from a device and network you normally used — Google uses location history to verify identity.</p>
       </div>
-      <div class="guide-card" data-service="instagram">
+      <div class="guide-card" data-service="instagram" data-reveal data-reveal-delay="1">
         <div class="guide-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
         </div>
@@ -470,7 +486,7 @@
         </ol>
         <p class="guide-tip">Tip: The video selfie verification has the highest success rate if your face appears in account photos.</p>
       </div>
-      <div class="guide-card" data-service="facebook">
+      <div class="guide-card" data-service="facebook" data-reveal data-reveal-delay="2">
         <div class="guide-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         </div>
@@ -484,7 +500,7 @@
         </ol>
         <p class="guide-tip">Tip: If you added a trusted contact to your account previously, they can help you regain access.</p>
       </div>
-      <div class="guide-card">
+      <div class="guide-card" data-reveal data-reveal-delay="3">
         <div class="guide-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
@@ -501,7 +517,7 @@
 </section>
 
 <!-- Footer -->
-<footer class="site-footer">
+<footer class="site-footer" data-reveal>
   <div class="footer-inner">
     <div class="footer-left">
       <span class="footer-logo">PassPredictor</span>
