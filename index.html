@@ -1,1 +1,457 @@
-﻿<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"><link rel="icon" href="https://fav.farm/🚀" /><title>Soumo Portfolio</title><link rel="stylesheet" href="assets/styles.css"></head><body class="d-flex flex-column align-items-center justify-content-center vh-100"><nav class="navbar navbar-expand-lg nav-pill-custom mb-4"><div class="navbar-nav"><a class="nav-link active text-primary fw-bold" href="index.html">Home</a><a class="nav-link" href="about.html">About</a></div></nav><div class="card custom-card text-center"><div class="clock-container mx-auto"><div id="clock" class="clock-time">00:00:00</div><div id="date" class="clock-date">Loading...</div></div><h1 id="welcome-msg" class="h3 mb-3">Welcome</h1><input type="text" id="nameInput" class="form-control mb-3" placeholder="Type name..." oninput="updateName()"><div id="advice-skeleton"><div class="skeleton w-75 mx-auto"></div><div class="skeleton w-50 mx-auto mb-4"></div></div><p id="advice-text" class="text-muted fst-italic mb-4" style="display:none"></p><button class="btn btn-primary w-100" onclick="changeColor()">Change Theme</button><footer class="mt-4 small text-secondary">© 2026 Soumoditya</footer></div><script src="assets/script.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pass Predictor — Generate likely password combinations from your personal traits. 100% private, runs offline in your browser.">
+  <title>Pass Predictor — Smart Password Recovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-mesh" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Confetti canvas -->
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Disclaimer Modal -->
+  <div class="modal-overlay" id="disclaimerModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-shield">🛡️</div>
+      <h2 id="modalTitle">Before You Begin</h2>
+      <p class="modal-lead">Pass Predictor <strong>generates a list of likely passwords</strong> based on your personal info — so you can try them manually to recover your account.</p>
+      <ul class="modal-list">
+        <li><span class="ok">✓</span> Runs 100% in your browser — nothing is ever sent to any server</li>
+        <li><span class="ok">✓</span> No accounts, no sign-up, no cookies</li>
+        <li><span class="ok">✓</span> Data is wiped when you close the tab</li>
+        <li><span class="no">✕</span> This tool does NOT log in to any account for you</li>
+        <li><span class="ok">✓</span> Only use this to recover your own accounts</li>
+      </ul>
+      <button class="btn btn-primary btn-full" id="modalAccept">I Understand — Let's Recover My Password</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <div class="logo">
+        <span class="logo-icon">🔑</span>
+        <span class="logo-text">Pass<span class="logo-accent">Predictor</span></span>
+      </div>
+      <div class="header-right">
+        <div class="privacy-pill">
+          <span class="pulse-dot"></span>
+          Offline &amp; Private
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode" title="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="badge-glow"></span>
+        AI-Powered Pattern Prediction
+      </div>
+      <h1 class="hero-title">
+        Forgot your password?<br>
+        <span class="gradient-text" id="typewriter">We'll help you find it.</span>
+      </h1>
+      <p class="hero-sub">
+        Tell us what you remember about yourself and we'll generate thousands of possible password combinations ranked by likelihood — for you to try manually.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">50K+</div>
+          <div class="stat-lbl">Combinations</div>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <div class="stat-num">100%</div>
+          <div class="stat-lbl">Private &amp; Offline</div>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <div class="stat-num">Free</div>
+          <div class="stat-lbl">No Sign-Up</div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-hero" onclick="document.querySelector('.main-tool').scrollIntoView({behavior:'smooth'})">
+        Start Recovery ↓
+      </button>
+    </div>
+  </section>
+
+  <!-- Main Tool -->
+  <main class="main-tool" id="mainTool">
+    <div class="container">
+
+      <!-- Step progress -->
+      <div class="progress-bar-wrap" id="progressBarWrap">
+        <div class="progress-steps">
+          <div class="ps active" data-step="1" onclick="goToStep(1)" title="About You">
+            <div class="ps-circle"><span class="ps-num">1</span><span class="ps-check">✓</span></div>
+            <div class="ps-label">About You</div>
+          </div>
+          <div class="ps-line" id="line-1-2"></div>
+          <div class="ps" data-step="2" onclick="goToStep(2)" title="Connections">
+            <div class="ps-circle"><span class="ps-num">2</span><span class="ps-check">✓</span></div>
+            <div class="ps-label">Connections</div>
+          </div>
+          <div class="ps-line" id="line-2-3"></div>
+          <div class="ps" data-step="3" onclick="goToStep(3)" title="Password Hints">
+            <div class="ps-circle"><span class="ps-num">3</span><span class="ps-check">✓</span></div>
+            <div class="ps-label">Hints</div>
+          </div>
+          <div class="ps-line" id="line-3-4"></div>
+          <div class="ps" data-step="4" title="Results">
+            <div class="ps-circle"><span class="ps-num">4</span><span class="ps-check">✓</span></div>
+            <div class="ps-label">Generate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="step-card" id="step1" data-active="true">
+        <div class="card-header">
+          <div class="card-icon-wrap"><span class="card-icon">👤</span></div>
+          <div>
+            <h2>Tell us about yourself</h2>
+            <p class="card-sub">Fill in as much as you remember. Every field helps narrow down your password.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="firstName">First Name</label>
+            <input class="form-input" type="text" id="firstName" placeholder="e.g. Rahul" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lastName">Last Name</label>
+            <input class="form-input" type="text" id="lastName" placeholder="e.g. Sharma" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="nickname">Nickname / Username</label>
+            <input class="form-input" type="text" id="nickname" placeholder="e.g. rocky, rk07, raj_cool" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="city">Hometown / City</label>
+            <input class="form-input" type="text" id="city" placeholder="e.g. Delhi, Mumbai, Kolkata" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="birthDay">Birth Day</label>
+            <select class="form-input" id="birthDay"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="birthMonth">Birth Month</label>
+            <select class="form-input" id="birthMonth"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="birthYear">Birth Year</label>
+            <input class="form-input" type="number" id="birthYear" placeholder="e.g. 1999" min="1940" max="2010">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="school">School / College Name</label>
+            <input class="form-input" type="text" id="school" placeholder="e.g. DPS, IIT, St. Xavier's" autocomplete="off">
+          </div>
+        </div>
+        <div class="step-actions">
+          <div></div>
+          <button class="btn btn-primary" onclick="goToStep(2)">Next: Connections →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card hidden" id="step2">
+        <div class="card-header">
+          <div class="card-icon-wrap"><span class="card-icon">❤️</span></div>
+          <div>
+            <h2>People &amp; pets close to you</h2>
+            <p class="card-sub">Names of loved ones often end up in passwords. Separate multiple names with commas.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="pets">Pet Name(s)</label>
+            <input class="form-input" type="text" id="pets" placeholder="e.g. Bruno, Mimi, Tommy, Lucky" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="partner">Partner / Crush Name</label>
+            <input class="form-input" type="text" id="partner" placeholder="e.g. Priya, Arjun, Neha" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="family">Parent / Sibling Names</label>
+            <input class="form-input" type="text" id="family" placeholder="e.g. Suresh, Radha, Ankit, Neha" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="friends">Best Friend Name(s)</label>
+            <input class="form-input" type="text" id="friends" placeholder="e.g. Aditya, Kartik, Sneha" autocomplete="off">
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn btn-ghost" onclick="goToStep(1)">← Back</button>
+          <button class="btn btn-primary" onclick="goToStep(3)">Next: Password Hints →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-card hidden" id="step3">
+        <div class="card-header">
+          <div class="card-icon-wrap"><span class="card-icon">🔐</span></div>
+          <div>
+            <h2>Password clues &amp; habits</h2>
+            <p class="card-sub">The more clues you provide, the more accurate the predictions. All data stays in your browser.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label class="form-label" for="partialPassword">Part of the password you remember</label>
+            <input class="form-input" type="text" id="partialPassword" placeholder="e.g. 'starts with abc' — type whatever you remember: abc, _45, hero, etc." autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="favoriteWords">Favorite words / interests</label>
+            <input class="form-input" type="text" id="favoriteWords" placeholder="e.g. cricket, dragon, king, music, lion" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="commonNumbers">Lucky / common numbers you use</label>
+            <input class="form-input" type="text" id="commonNumbers" placeholder="e.g. 786, 007, 2019, 420" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="commonSymbols">Symbols you usually add</label>
+            <input class="form-input" type="text" id="commonSymbols" placeholder="e.g. ! @ # _ *" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="knownPasswords">Passwords from other accounts you remember</label>
+            <input class="form-input" type="text" id="knownPasswords" placeholder="e.g. hello123, rahul@99 — we'll generate variants" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="options-box">
+          <h3 class="options-heading">Generation Options</h3>
+          <div class="toggle-grid">
+            <label class="toggle-row">
+              <input type="checkbox" id="optLeet" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">Leet speak variants <em>(a→@, e→3, i→1, o→0, s→$)</em></span>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" id="optCommonSuffix" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">Common suffixes &amp; symbols <em>(123, !, @, #, .)</em></span>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" id="optYearVariants" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">Recent year variants <em>(2023, 2024, 2025, 2026)</em></span>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" id="optTwoWord" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">Two-word combos <em>(JohnBruno, rahulpriya, etc.)</em></span>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" id="optReverse" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">Reversed words <em>(nhoJ, onurB)</em></span>
+            </label>
+          </div>
+
+          <div class="length-row">
+            <label class="form-label">
+              Password length: <span class="length-badge" id="lengthDisplay">6 – 20</span> characters
+            </label>
+            <div class="dual-range">
+              <input type="range" id="minLength" min="4" max="30" value="6" class="range-sl" oninput="updateLengthDisplay()">
+              <input type="range" id="maxLength" min="4" max="30" value="20" class="range-sl" oninput="updateLengthDisplay()">
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn btn-ghost" onclick="goToStep(2)">← Back</button>
+          <button class="btn btn-generate" id="generateBtn" onclick="generatePasswords()">
+            <span class="generate-icon">✨</span>
+            Generate My Passwords
+          </button>
+        </div>
+      </div>
+
+      <!-- Generating state -->
+      <div class="generating-card hidden" id="generatingCard">
+        <div class="gen-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring r2"></div>
+          <div class="spinner-ring r3"></div>
+        </div>
+        <h3 class="gen-title">Analyzing your patterns...</h3>
+        <div class="gen-bar-wrap"><div class="gen-bar" id="genBar"></div></div>
+        <p class="gen-sub" id="genStatus">Building word variants...</p>
+      </div>
+
+      <!-- Results -->
+      <div class="results-card hidden" id="resultsCard">
+        <div class="results-hero">
+          <div class="results-count-wrap">
+            <span class="results-count-num" id="countNum">0</span>
+            <span class="results-count-lbl">possible passwords generated</span>
+          </div>
+          <div class="results-btns">
+            <button class="btn btn-ghost btn-sm" id="visibilityBtn" onclick="toggleAllVisibility()">
+              <span id="visIcon">👁️</span> Show
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadPasswords()">⬇️ Download</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyAll()">📋 Copy All</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetTool()">🔄 Start Over</button>
+          </div>
+        </div>
+
+        <div class="filters-row">
+          <div class="search-box">
+            <span class="search-ico">🔍</span>
+            <input type="text" class="search-inp" id="searchInput" placeholder="Search within results..." oninput="applyFilters()">
+          </div>
+          <div class="chips-row">
+            <span class="chip-label">Sort:</span>
+            <button class="chip active" data-sort="likely" onclick="setSortMode(this,'likely')">Most Likely</button>
+            <button class="chip" data-sort="length" onclick="setSortMode(this,'length')">By Length</button>
+            <button class="chip" data-sort="alpha" onclick="setSortMode(this,'alpha')">A–Z</button>
+          </div>
+          <div class="chips-row">
+            <span class="chip-label">Filter:</span>
+            <button class="chip active" data-filter="all" onclick="setFilterMode(this,'all')">All</button>
+            <button class="chip" data-filter="hasNum" onclick="setFilterMode(this,'hasNum')">Has Numbers</button>
+            <button class="chip" data-filter="hasSym" onclick="setFilterMode(this,'hasSym')">Has Symbols</button>
+          </div>
+        </div>
+
+        <div class="pw-list" id="pwList"></div>
+        <div class="pagination-wrap" id="paginationWrap"></div>
+
+        <div class="alert-box">
+          <span class="alert-icon">⚠️</span>
+          <div>
+            <strong>How to use these:</strong> Go to Gmail / Instagram → click <em>"Forgot password"</em> → try the official recovery options first. If those fail, try the top-ranked passwords here one by one. Never share this list.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Tips Section -->
+  <section class="tips-section">
+    <div class="container">
+      <h2 class="section-title">Recovery Guides &amp; Tips</h2>
+      <p class="section-sub">Official steps to recover your Gmail and Instagram, plus expert tips.</p>
+      <div class="accordion" id="faqAccordion">
+
+        <div class="acc-item">
+          <button class="acc-btn" onclick="toggleAccordion(this)">
+            <span class="acc-ico">📧</span>
+            <span>How to recover your Gmail account step by step</span>
+            <span class="acc-arrow">▾</span>
+          </button>
+          <div class="acc-body">
+            <ol>
+              <li>Visit <strong>accounts.google.com/signin/recovery</strong> in your browser</li>
+              <li>Enter your Gmail address and click Next</li>
+              <li>Click <strong>"Try a different way"</strong> to see all recovery options</li>
+              <li>If you had a linked phone number, Google can send a code via SMS</li>
+              <li>If you have a trusted device (phone/laptop) still logged in, confirm there</li>
+              <li>If none of those work, answer the security questions Google asks (approximate creation date, recovery email, etc.)</li>
+              <li>As a last resort, try the passwords generated above one by one in the standard login</li>
+            </ol>
+            <p class="tip-note">💡 Tip: Try recovery from a device and network you normally use — Google uses this to verify identity.</p>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button class="acc-btn" onclick="toggleAccordion(this)">
+            <span class="acc-ico">📸</span>
+            <span>How to recover your Instagram account step by step</span>
+            <span class="acc-arrow">▾</span>
+          </button>
+          <div class="acc-body">
+            <ol>
+              <li>Open Instagram app → tap "Get more help" below the login form</li>
+              <li>Enter your username, email, or phone number linked to the account</li>
+              <li>If you have access to the linked email/phone, choose that option and confirm the code</li>
+              <li>If not, tap <strong>"I can't access this email or phone number"</strong></li>
+              <li>Instagram may offer a <strong>video selfie</strong> verification — this compares your face to tagged photos on the account</li>
+              <li>If you have Facebook linked, you may be able to log in via Facebook</li>
+              <li>Try the generated passwords manually via the normal Instagram login</li>
+            </ol>
+            <p class="tip-note">💡 Tip: The video selfie option has the highest success rate if your face appears in account photos.</p>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button class="acc-btn" onclick="toggleAccordion(this)">
+            <span class="acc-ico">🧠</span>
+            <span>Why do we forget passwords?</span>
+            <span class="acc-arrow">▾</span>
+          </button>
+          <div class="acc-body">
+            <p>Most people create passwords using a small set of personal patterns — a familiar name, a meaningful date, and a simple suffix like "123" or "!". Over time we forget which exact combination we used for which account, especially if we had to change it at some point. Pass Predictor reconstructs all realistic variants of your patterns, ranked by how commonly people build passwords.</p>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button class="acc-btn" onclick="toggleAccordion(this)">
+            <span class="acc-ico">🔒</span>
+            <span>Is my personal data safe here?</span>
+            <span class="acc-arrow">▾</span>
+          </button>
+          <div class="acc-body">
+            <p>Yes — completely. This tool is a static HTML/JS file. <strong>There is no server.</strong> Open your browser's DevTools → Network tab and watch: zero requests are made while using this tool. All processing happens locally in your browser's memory. The moment you close the tab, everything is gone. Nothing is saved, cached, or logged anywhere.</p>
+          </div>
+        </div>
+
+        <div class="acc-item">
+          <button class="acc-btn" onclick="toggleAccordion(this)">
+            <span class="acc-ico">💡</span>
+            <span>Tips for trying generated passwords efficiently</span>
+            <span class="acc-arrow">▾</span>
+          </button>
+          <div class="acc-body">
+            <ul>
+              <li><strong>Download the list</strong> and keep it open while you try passwords</li>
+              <li>Start with <strong>Most Likely</strong> — passwords scored highest match the most common human patterns</li>
+              <li>Try the top 30 before anything else — the real one is often near the top</li>
+              <li>⚠️ Be careful of <strong>account lockouts</strong> — many platforms lock after 5–10 wrong attempts. Use the official "Forgot Password" flow whenever possible instead of direct login attempts</li>
+              <li>After recovery: immediately set up a <strong>recovery phone number and backup email</strong> so this never happens again</li>
+              <li>Consider using a <strong>free password manager</strong> like Bitwarden going forward</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-logo">🔑 PassPredictor</div>
+      <p class="footer-tag">Free · Private · Offline · No ads · No tracking</p>
+      <p class="footer-disclaimer">For personal account recovery only. Never use this tool to access accounts that don't belong to you. All processing is done locally in your browser.</p>
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
