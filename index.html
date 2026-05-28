@@ -3,460 +3,514 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#05050f" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f0f2ff" media="(prefers-color-scheme: light)">
+  <meta name="description" content="PassPredictor — Generate likely password candidates from personal details. Runs entirely offline in your browser.">
+  <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Pass Predictor — Generate likely password combinations from your personal traits. 100% private, runs offline in your browser.">
-  <title>Pass Predictor — Smart Password Recovery</title>
+  <title>PassPredictor — Password Recovery Tool</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-  <!-- Animated background -->
-  <div class="bg-mesh" aria-hidden="true">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-  </div>
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
-  <!-- Confetti canvas -->
-  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
-
-  <!-- Toast container -->
-  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
-
-  <!-- Disclaimer Modal -->
-  <div class="modal-overlay" id="disclaimerModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-card">
-      <div class="modal-shield">🛡️</div>
-      <h2 id="modalTitle">Before You Begin</h2>
-      <p class="modal-lead">Pass Predictor <strong>generates a list of likely passwords</strong> based on your personal info — so you can try them manually to recover your account.</p>
-      <ul class="modal-list">
-        <li><span class="ok">✓</span> Runs 100% in your browser — nothing is ever sent to any server</li>
-        <li><span class="ok">✓</span> No accounts, no sign-up, no cookies</li>
-        <li><span class="ok">✓</span> Data is wiped when you close the tab</li>
-        <li><span class="no">✕</span> This tool does NOT log in to any account for you</li>
-        <li><span class="ok">✓</span> Only use this to recover your own accounts</li>
-      </ul>
-      <button class="btn btn-primary btn-full" id="modalAccept">I Understand — Let's Recover My Password</button>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <header class="header">
-    <div class="container header-inner">
-      <div class="logo">
-        <span class="logo-icon">🔑</span>
-        <span class="logo-text">Pass<span class="logo-accent">Predictor</span></span>
-      </div>
-      <div class="header-right">
-        <div class="privacy-pill">
-          <span class="pulse-dot"></span>
-          Offline &amp; Private
-        </div>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode" title="Toggle theme">
-          <span id="themeIcon">🌙</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-badge">
-        <span class="badge-glow"></span>
-        AI-Powered Pattern Prediction
-      </div>
-      <h1 class="hero-title">
-        Forgot your password?<br>
-        <span class="gradient-text" id="typewriter">We'll help you find it.</span>
-      </h1>
-      <p class="hero-sub">
-        Tell us what you remember about yourself and we'll generate thousands of possible password combinations ranked by likelihood — for you to try manually.
-      </p>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <div class="stat-num">50K+</div>
-          <div class="stat-lbl">Combinations</div>
-        </div>
-        <div class="stat-sep"></div>
-        <div class="stat-item">
-          <div class="stat-num">100%</div>
-          <div class="stat-lbl">Private &amp; Offline</div>
-        </div>
-        <div class="stat-sep"></div>
-        <div class="stat-item">
-          <div class="stat-num">Free</div>
-          <div class="stat-lbl">No Sign-Up</div>
-        </div>
-      </div>
-      <button class="btn btn-primary btn-hero" onclick="document.querySelector('.main-tool').scrollIntoView({behavior:'smooth'})">
-        Start Recovery ↓
+<!-- Header -->
+<header class="site-header">
+  <div class="hdr-inner">
+    <a href="#" class="site-logo" aria-label="PassPredictor home">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+      PassPredictor
+    </a>
+    <div class="hdr-right">
+      <span class="offline-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Offline &amp; Private
+      </span>
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle colour theme">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
     </div>
-  </section>
+  </div>
+</header>
 
-  <!-- Main Tool -->
-  <main class="main-tool" id="mainTool">
-    <div class="container">
-
-      <!-- Step progress -->
-      <div class="progress-bar-wrap" id="progressBarWrap">
-        <div class="progress-steps">
-          <div class="ps active" data-step="1" onclick="goToStep(1)" title="About You">
-            <div class="ps-circle"><span class="ps-num">1</span><span class="ps-check">✓</span></div>
-            <div class="ps-label">About You</div>
-          </div>
-          <div class="ps-line" id="line-1-2"></div>
-          <div class="ps" data-step="2" onclick="goToStep(2)" title="Connections">
-            <div class="ps-circle"><span class="ps-num">2</span><span class="ps-check">✓</span></div>
-            <div class="ps-label">Connections</div>
-          </div>
-          <div class="ps-line" id="line-2-3"></div>
-          <div class="ps" data-step="3" onclick="goToStep(3)" title="Password Hints">
-            <div class="ps-circle"><span class="ps-num">3</span><span class="ps-check">✓</span></div>
-            <div class="ps-label">Hints</div>
-          </div>
-          <div class="ps-line" id="line-3-4"></div>
-          <div class="ps" data-step="4" title="Results">
-            <div class="ps-circle"><span class="ps-num">4</span><span class="ps-check">✓</span></div>
-            <div class="ps-label">Generate</div>
-          </div>
-        </div>
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <p class="hero-kicker">Password Recovery Tool</p>
+      <h1>Recover your forgotten<br>account password.</h1>
+      <p class="hero-desc">Enter what you remember about yourself and your password habits. We generate every likely combination — ranked by probability — for you to try manually.</p>
+      <div class="trust-row">
+        <span>No sign-up</span>
+        <span class="trust-dot"></span>
+        <span>Nothing sent anywhere</span>
+        <span class="trust-dot"></span>
+        <span>Free forever</span>
       </div>
+      <button class="btn-primary" id="heroScroll">
+        Start recovery
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </button>
+    </div>
+    <div class="hero-preview" id="heroPreview" aria-label="Live password preview" aria-hidden="true">
+      <div class="preview-header">
+        <span>Preview</span>
+        <span class="preview-tag">Updates as you type</span>
+      </div>
+      <div class="preview-list" id="previewList">
+        <div class="preview-empty">Fill in the form below to see a live preview of likely passwords.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      <!-- STEP 1 -->
-      <div class="step-card" id="step1" data-active="true">
-        <div class="card-header">
-          <div class="card-icon-wrap"><span class="card-icon">👤</span></div>
-          <div>
-            <h2>Tell us about yourself</h2>
-            <p class="card-sub">Fill in as much as you remember. Every field helps narrow down your password.</p>
-          </div>
-        </div>
+<!-- Tool -->
+<main class="tool-wrap" id="toolSection">
+  <div class="tool-inner">
+
+    <!-- Service selector + disclaimer -->
+    <div class="tool-top">
+      <div class="service-row">
+        <label class="field-label" for="serviceSelect">Account type</label>
+        <select class="select-input" id="serviceSelect">
+          <option value="">Any platform</option>
+          <option value="gmail">Gmail / Google</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+          <option value="snapchat">Snapchat</option>
+          <option value="twitter">Twitter / X</option>
+          <option value="discord">Discord</option>
+        </select>
+      </div>
+      <div class="notice-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        This tool runs entirely in your browser. Nothing you enter is stored on any server or transmitted anywhere. Use it only to recover your own accounts.
+      </div>
+    </div>
+
+    <!-- Session restore banner -->
+    <div class="session-banner hidden" id="sessionBanner">
+      <span>You have a saved session from <span id="sessionDate"></span>.</span>
+      <div class="session-actions">
+        <button class="link-btn" id="sessionRestore">Restore</button>
+        <button class="link-btn dimmed" id="sessionDiscard">Discard</button>
+      </div>
+    </div>
+
+    <!-- Step tabs -->
+    <div class="step-tabs" id="stepTabs" role="tablist">
+      <button class="step-tab active" role="tab" aria-selected="true" data-step="0">
+        <span class="tab-num">1</span>
+        <span class="tab-label">About you</span>
+      </button>
+      <span class="tab-connector" data-line="0"></span>
+      <button class="step-tab" role="tab" aria-selected="false" data-step="1">
+        <span class="tab-num">2</span>
+        <span class="tab-label">Connections</span>
+      </button>
+      <span class="tab-connector" data-line="1"></span>
+      <button class="step-tab" role="tab" aria-selected="false" data-step="2">
+        <span class="tab-num">3</span>
+        <span class="tab-label">Password hints</span>
+      </button>
+      <span class="tab-connector" data-line="2"></span>
+      <button class="step-tab" role="tab" aria-selected="false" data-step="3">
+        <span class="tab-num">4</span>
+        <span class="tab-label">Options</span>
+      </button>
+    </div>
+
+    <!-- Step panels -->
+    <div class="step-panels">
+
+      <!-- Panel 0: About You -->
+      <div class="step-panel active" id="panel-0" role="tabpanel">
         <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label" for="firstName">First Name</label>
-            <input class="form-input" type="text" id="firstName" placeholder="e.g. Rahul" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="firstName">First name</label>
+            <input class="text-input" type="text" id="firstName" placeholder="Rahul" autocomplete="off" spellcheck="false">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="lastName">Last Name</label>
-            <input class="form-input" type="text" id="lastName" placeholder="e.g. Sharma" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="lastName">Last name</label>
+            <input class="text-input" type="text" id="lastName" placeholder="Sharma" autocomplete="off" spellcheck="false">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="nickname">Nickname / Username</label>
-            <input class="form-input" type="text" id="nickname" placeholder="e.g. rocky, rk07, raj_cool" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="nickname">Nickname / username</label>
+            <input class="text-input" type="text" id="nickname" placeholder="rocky, rk07, raj_cool" autocomplete="off" spellcheck="false">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="city">Hometown / City</label>
-            <input class="form-input" type="text" id="city" placeholder="e.g. Delhi, Mumbai, Kolkata" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="city">City / hometown</label>
+            <input class="text-input" type="text" id="city" placeholder="Delhi, Mumbai" autocomplete="off" spellcheck="false">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="birthDay">Birth Day</label>
-            <select class="form-input" id="birthDay"></select>
+          <div class="field-group">
+            <label class="field-label" for="birthDay">Birth day</label>
+            <select class="text-input" id="birthDay"></select>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="birthMonth">Birth Month</label>
-            <select class="form-input" id="birthMonth"></select>
+          <div class="field-group">
+            <label class="field-label" for="birthMonth">Birth month</label>
+            <select class="text-input" id="birthMonth"></select>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="birthYear">Birth Year</label>
-            <input class="form-input" type="number" id="birthYear" placeholder="e.g. 1999" min="1940" max="2010">
+          <div class="field-group">
+            <label class="field-label" for="birthYear">Birth year</label>
+            <input class="text-input" type="number" id="birthYear" placeholder="1999" min="1940" max="2010">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="school">School / College Name</label>
-            <input class="form-input" type="text" id="school" placeholder="e.g. DPS, IIT, St. Xavier's" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="phoneLast4">Phone number (last 4 digits)</label>
+            <input class="text-input" type="text" id="phoneLast4" placeholder="7856" maxlength="6" autocomplete="off" inputmode="numeric">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="school">School / college</label>
+            <input class="text-input" type="text" id="school" placeholder="DPS, IIT, St. Xavier's" autocomplete="off" spellcheck="false">
           </div>
         </div>
-        <div class="step-actions">
+        <div class="panel-actions">
           <div></div>
-          <button class="btn btn-primary" onclick="goToStep(2)">Next: Connections →</button>
+          <button class="btn-primary" data-next="1">Next: Connections <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
         </div>
       </div>
 
-      <!-- STEP 2 -->
-      <div class="step-card hidden" id="step2">
-        <div class="card-header">
-          <div class="card-icon-wrap"><span class="card-icon">❤️</span></div>
-          <div>
-            <h2>People &amp; pets close to you</h2>
-            <p class="card-sub">Names of loved ones often end up in passwords. Separate multiple names with commas.</p>
-          </div>
-        </div>
+      <!-- Panel 1: Connections -->
+      <div class="step-panel hidden" id="panel-1" role="tabpanel">
         <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label" for="pets">Pet Name(s)</label>
-            <input class="form-input" type="text" id="pets" placeholder="e.g. Bruno, Mimi, Tommy, Lucky" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="pets">Pet name(s)</label>
+            <input class="text-input" type="text" id="pets" placeholder="Bruno, Mimi, Tommy" autocomplete="off" spellcheck="false">
+            <p class="field-hint">Separate multiple names with commas</p>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="partner">Partner / Crush Name</label>
-            <input class="form-input" type="text" id="partner" placeholder="e.g. Priya, Arjun, Neha" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="partner">Partner / crush</label>
+            <input class="text-input" type="text" id="partner" placeholder="Priya, Arjun" autocomplete="off" spellcheck="false">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="family">Parent / Sibling Names</label>
-            <input class="form-input" type="text" id="family" placeholder="e.g. Suresh, Radha, Ankit, Neha" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="family">Parents / siblings</label>
+            <input class="text-input" type="text" id="family" placeholder="Suresh, Radha, Ankit" autocomplete="off" spellcheck="false">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="friends">Best Friend Name(s)</label>
-            <input class="form-input" type="text" id="friends" placeholder="e.g. Aditya, Kartik, Sneha" autocomplete="off">
+          <div class="field-group">
+            <label class="field-label" for="friends">Close friends</label>
+            <input class="text-input" type="text" id="friends" placeholder="Aditya, Kartik, Sneha" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="celebrity">Favourite celebrity / character</label>
+            <input class="text-input" type="text" id="celebrity" placeholder="Kohli, Ironman, Ronaldo" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="sportsTeam">Favourite sports team</label>
+            <input class="text-input" type="text" id="sportsTeam" placeholder="CSK, Arsenal, Lakers" autocomplete="off" spellcheck="false">
           </div>
         </div>
-        <div class="step-actions">
-          <button class="btn btn-ghost" onclick="goToStep(1)">← Back</button>
-          <button class="btn btn-primary" onclick="goToStep(3)">Next: Password Hints →</button>
+        <div class="panel-actions">
+          <button class="btn-secondary" data-prev="0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn-primary" data-next="2">Next: Password hints <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
         </div>
       </div>
 
-      <!-- STEP 3 -->
-      <div class="step-card hidden" id="step3">
-        <div class="card-header">
-          <div class="card-icon-wrap"><span class="card-icon">🔐</span></div>
-          <div>
-            <h2>Password clues &amp; habits</h2>
-            <p class="card-sub">The more clues you provide, the more accurate the predictions. All data stays in your browser.</p>
-          </div>
-        </div>
-        <div class="form-grid">
-          <div class="form-group form-full">
-            <label class="form-label" for="partialPassword">Part of the password you remember</label>
-            <input class="form-input" type="text" id="partialPassword" placeholder="e.g. 'starts with abc' — type whatever you remember: abc, _45, hero, etc." autocomplete="off">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="favoriteWords">Favorite words / interests</label>
-            <input class="form-input" type="text" id="favoriteWords" placeholder="e.g. cricket, dragon, king, music, lion" autocomplete="off">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="commonNumbers">Lucky / common numbers you use</label>
-            <input class="form-input" type="text" id="commonNumbers" placeholder="e.g. 786, 007, 2019, 420" autocomplete="off">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="commonSymbols">Symbols you usually add</label>
-            <input class="form-input" type="text" id="commonSymbols" placeholder="e.g. ! @ # _ *" autocomplete="off">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="knownPasswords">Passwords from other accounts you remember</label>
-            <input class="form-input" type="text" id="knownPasswords" placeholder="e.g. hello123, rahul@99 — we'll generate variants" autocomplete="off">
-          </div>
-        </div>
-
-        <div class="options-box">
-          <h3 class="options-heading">Generation Options</h3>
-          <div class="toggle-grid">
-            <label class="toggle-row">
-              <input type="checkbox" id="optLeet" checked>
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              <span class="toggle-label">Leet speak variants <em>(a→@, e→3, i→1, o→0, s→$)</em></span>
-            </label>
-            <label class="toggle-row">
-              <input type="checkbox" id="optCommonSuffix" checked>
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              <span class="toggle-label">Common suffixes &amp; symbols <em>(123, !, @, #, .)</em></span>
-            </label>
-            <label class="toggle-row">
-              <input type="checkbox" id="optYearVariants" checked>
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              <span class="toggle-label">Recent year variants <em>(2023, 2024, 2025, 2026)</em></span>
-            </label>
-            <label class="toggle-row">
-              <input type="checkbox" id="optTwoWord" checked>
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              <span class="toggle-label">Two-word combos <em>(JohnBruno, rahulpriya, etc.)</em></span>
-            </label>
-            <label class="toggle-row">
-              <input type="checkbox" id="optReverse" checked>
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              <span class="toggle-label">Reversed words <em>(nhoJ, onurB)</em></span>
-            </label>
-          </div>
-
-          <div class="length-row">
-            <label class="form-label">
-              Password length: <span class="length-badge" id="lengthDisplay">6 – 20</span> characters
-            </label>
-            <div class="dual-range">
-              <input type="range" id="minLength" min="4" max="30" value="6" class="range-sl" oninput="updateLengthDisplay()">
-              <input type="range" id="maxLength" min="4" max="30" value="20" class="range-sl" oninput="updateLengthDisplay()">
+      <!-- Panel 2: Password Hints -->
+      <div class="step-panel hidden" id="panel-2" role="tabpanel">
+        <div class="partial-group">
+          <p class="field-label">Part of the password you remember</p>
+          <div class="partial-row">
+            <div class="field-group">
+              <label class="field-label sr-only" for="startsWithField">Starts with</label>
+              <input class="text-input" type="text" id="startsWithField" placeholder="Starts with..." autocomplete="off" spellcheck="false">
+              <p class="field-hint">e.g. abc, John, my</p>
+            </div>
+            <div class="field-group">
+              <label class="field-label sr-only" for="containsField">Contains</label>
+              <input class="text-input" type="text" id="containsField" placeholder="Contains..." autocomplete="off" spellcheck="false">
+              <p class="field-hint">e.g. 99, @, hero</p>
+            </div>
+            <div class="field-group">
+              <label class="field-label sr-only" for="endsWithField">Ends with</label>
+              <input class="text-input" type="text" id="endsWithField" placeholder="Ends with..." autocomplete="off" spellcheck="false">
+              <p class="field-hint">e.g. 123, !, #</p>
             </div>
           </div>
         </div>
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label" for="favoriteWords">Favourite words / interests</label>
+            <input class="text-input" type="text" id="favoriteWords" placeholder="cricket, dragon, king, music" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="commonNumbers">Lucky or common numbers</label>
+            <input class="text-input" type="text" id="commonNumbers" placeholder="786, 007, 2019" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="commonSymbols">Symbols you usually add</label>
+            <input class="text-input" type="text" id="commonSymbols" placeholder="! @ # _" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="knownPasswords">Passwords from other accounts</label>
+            <input class="text-input" type="text" id="knownPasswords" placeholder="hello123, name@99" autocomplete="off" spellcheck="false">
+            <p class="field-hint">We'll generate similar variations</p>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button class="btn-secondary" data-prev="1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn-primary" data-next="3">Options <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
 
-        <div class="step-actions">
-          <button class="btn btn-ghost" onclick="goToStep(2)">← Back</button>
-          <button class="btn btn-generate" id="generateBtn" onclick="generatePasswords()">
-            <span class="generate-icon">✨</span>
-            Generate My Passwords
+      <!-- Panel 3: Options -->
+      <div class="step-panel hidden" id="panel-3" role="tabpanel">
+        <div class="opts-grid">
+          <label class="opt-row">
+            <input type="checkbox" id="optLeet" checked>
+            <span class="opt-check" aria-hidden="true"></span>
+            <span class="opt-text">
+              <strong>Leet speak</strong>
+              <span>a→@, e→3, i→1, o→0, s→$</span>
+            </span>
+          </label>
+          <label class="opt-row">
+            <input type="checkbox" id="optSuffix" checked>
+            <span class="opt-check" aria-hidden="true"></span>
+            <span class="opt-text">
+              <strong>Common suffixes</strong>
+              <span>123, 1234, !, @, #, .</span>
+            </span>
+          </label>
+          <label class="opt-row">
+            <input type="checkbox" id="optYears" checked>
+            <span class="opt-check" aria-hidden="true"></span>
+            <span class="opt-text">
+              <strong>Recent years</strong>
+              <span>2018 – 2026 appended or prepended</span>
+            </span>
+          </label>
+          <label class="opt-row">
+            <input type="checkbox" id="optTwoWord" checked>
+            <span class="opt-check" aria-hidden="true"></span>
+            <span class="opt-text">
+              <strong>Two-word combos</strong>
+              <span>JohnBruno, rahulpriya, etc.</span>
+            </span>
+          </label>
+          <label class="opt-row">
+            <input type="checkbox" id="optReverse" checked>
+            <span class="opt-check" aria-hidden="true"></span>
+            <span class="opt-text">
+              <strong>Reversed words</strong>
+              <span>nhoJ, onurB, eirp</span>
+            </span>
+          </label>
+          <label class="opt-row">
+            <input type="checkbox" id="optKeyboard">
+            <span class="opt-check" aria-hidden="true"></span>
+            <span class="opt-text">
+              <strong>Keyboard walks</strong>
+              <span>qwerty, asdf, zxcv + your name/numbers</span>
+            </span>
+          </label>
+          <label class="opt-row">
+            <input type="checkbox" id="optCommonPwds">
+            <span class="opt-check" aria-hidden="true"></span>
+            <span class="opt-text">
+              <strong>Common passwords</strong>
+              <span>Top 30 frequently-used passwords added to list</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="length-control">
+          <div class="length-header">
+            <label class="field-label" for="minLen">Password length range</label>
+            <span class="length-val" id="lengthVal">6 – 20 characters</span>
+          </div>
+          <div class="range-pair">
+            <input class="range-inp" type="range" id="minLen" min="4" max="30" value="6">
+            <input class="range-inp" type="range" id="maxLen" min="4" max="30" value="20">
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn-secondary" data-prev="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn-generate" id="generateBtn">
+            Generate passwords
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="13 2 13 9 20 9"/><path d="M19.5 14.5A7 7 0 1 1 10 10l3-7 6.5 7z" style="display:none"/><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
           </button>
         </div>
       </div>
+    </div>
 
-      <!-- Generating state -->
-      <div class="generating-card hidden" id="generatingCard">
-        <div class="gen-spinner">
-          <div class="spinner-ring"></div>
-          <div class="spinner-ring r2"></div>
-          <div class="spinner-ring r3"></div>
-        </div>
-        <h3 class="gen-title">Analyzing your patterns...</h3>
-        <div class="gen-bar-wrap"><div class="gen-bar" id="genBar"></div></div>
-        <p class="gen-sub" id="genStatus">Building word variants...</p>
+    <!-- Generating state -->
+    <div class="gen-state hidden" id="genState">
+      <div class="gen-spinner" aria-label="Generating...">
+        <div class="spin-ring"></div>
+        <div class="spin-ring r2"></div>
       </div>
+      <p class="gen-label" id="genLabel">Analyzing patterns…</p>
+      <div class="gen-bar-track"><div class="gen-bar-fill" id="genBarFill"></div></div>
+    </div>
 
-      <!-- Results -->
-      <div class="results-card hidden" id="resultsCard">
-        <div class="results-hero">
-          <div class="results-count-wrap">
-            <span class="results-count-num" id="countNum">0</span>
-            <span class="results-count-lbl">possible passwords generated</span>
-          </div>
-          <div class="results-btns">
-            <button class="btn btn-ghost btn-sm" id="visibilityBtn" onclick="toggleAllVisibility()">
-              <span id="visIcon">👁️</span> Show
+    <!-- Results -->
+    <div class="results-wrap hidden" id="resultsWrap">
+      <div class="results-bar">
+        <div class="results-meta">
+          <span class="results-count" id="resultsCount">0</span>
+          <span class="results-count-label">passwords generated</span>
+        </div>
+        <div class="results-tools">
+          <button class="tool-btn" id="toggleVis" data-visible="false">
+            <svg class="eye-show" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-hide hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            Show
+          </button>
+          <button class="tool-btn" id="copyAllBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy all
+          </button>
+          <div class="export-group">
+            <button class="tool-btn" id="exportTxt">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              .txt
             </button>
-            <button class="btn btn-ghost btn-sm" onclick="downloadPasswords()">⬇️ Download</button>
-            <button class="btn btn-ghost btn-sm" onclick="copyAll()">📋 Copy All</button>
-            <button class="btn btn-ghost btn-sm" onclick="resetTool()">🔄 Start Over</button>
+            <button class="tool-btn" id="exportCsv">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              .csv
+            </button>
           </div>
-        </div>
-
-        <div class="filters-row">
-          <div class="search-box">
-            <span class="search-ico">🔍</span>
-            <input type="text" class="search-inp" id="searchInput" placeholder="Search within results..." oninput="applyFilters()">
-          </div>
-          <div class="chips-row">
-            <span class="chip-label">Sort:</span>
-            <button class="chip active" data-sort="likely" onclick="setSortMode(this,'likely')">Most Likely</button>
-            <button class="chip" data-sort="length" onclick="setSortMode(this,'length')">By Length</button>
-            <button class="chip" data-sort="alpha" onclick="setSortMode(this,'alpha')">A–Z</button>
-          </div>
-          <div class="chips-row">
-            <span class="chip-label">Filter:</span>
-            <button class="chip active" data-filter="all" onclick="setFilterMode(this,'all')">All</button>
-            <button class="chip" data-filter="hasNum" onclick="setFilterMode(this,'hasNum')">Has Numbers</button>
-            <button class="chip" data-filter="hasSym" onclick="setFilterMode(this,'hasSym')">Has Symbols</button>
-          </div>
-        </div>
-
-        <div class="pw-list" id="pwList"></div>
-        <div class="pagination-wrap" id="paginationWrap"></div>
-
-        <div class="alert-box">
-          <span class="alert-icon">⚠️</span>
-          <div>
-            <strong>How to use these:</strong> Go to Gmail / Instagram → click <em>"Forgot password"</em> → try the official recovery options first. If those fail, try the top-ranked passwords here one by one. Never share this list.
-          </div>
+          <button class="tool-btn dim" id="resetBtn">Reset</button>
         </div>
       </div>
 
+      <!-- Filter row -->
+      <div class="filter-bar">
+        <div class="search-field">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-inp" id="searchInp" placeholder="Search passwords…">
+        </div>
+        <div class="filter-chips" id="sortChips">
+          <span class="chip-label">Sort</span>
+          <button class="chip active" data-sort="likely">Most likely</button>
+          <button class="chip" data-sort="length">By length</button>
+          <button class="chip" data-sort="alpha">A–Z</button>
+        </div>
+        <div class="filter-chips" id="filterChips">
+          <span class="chip-label">Filter</span>
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="num">Has numbers</button>
+          <button class="chip" data-filter="sym">Has symbols</button>
+        </div>
+      </div>
+
+      <!-- Pattern breakdown -->
+      <div class="breakdown-bar" id="breakdownBar"></div>
+
+      <!-- Password table -->
+      <div class="pw-table-wrap">
+        <table class="pw-table" id="pwTable">
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th class="col-password">Password</th>
+              <th class="col-pattern">Pattern</th>
+              <th class="col-strength">Strength</th>
+              <th class="col-copy" aria-label="Copy"></th>
+            </tr>
+          </thead>
+          <tbody id="pwTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination"></div>
+
+      <!-- Platform-specific note -->
+      <div class="platform-note" id="platformNote"></div>
     </div>
-  </main>
+  </div>
+</main>
 
-  <!-- Tips Section -->
-  <section class="tips-section">
-    <div class="container">
-      <h2 class="section-title">Recovery Guides &amp; Tips</h2>
-      <p class="section-sub">Official steps to recover your Gmail and Instagram, plus expert tips.</p>
-      <div class="accordion" id="faqAccordion">
-
-        <div class="acc-item">
-          <button class="acc-btn" onclick="toggleAccordion(this)">
-            <span class="acc-ico">📧</span>
-            <span>How to recover your Gmail account step by step</span>
-            <span class="acc-arrow">▾</span>
-          </button>
-          <div class="acc-body">
-            <ol>
-              <li>Visit <strong>accounts.google.com/signin/recovery</strong> in your browser</li>
-              <li>Enter your Gmail address and click Next</li>
-              <li>Click <strong>"Try a different way"</strong> to see all recovery options</li>
-              <li>If you had a linked phone number, Google can send a code via SMS</li>
-              <li>If you have a trusted device (phone/laptop) still logged in, confirm there</li>
-              <li>If none of those work, answer the security questions Google asks (approximate creation date, recovery email, etc.)</li>
-              <li>As a last resort, try the passwords generated above one by one in the standard login</li>
-            </ol>
-            <p class="tip-note">💡 Tip: Try recovery from a device and network you normally use — Google uses this to verify identity.</p>
-          </div>
+<!-- Recovery Guides -->
+<section class="guides-section">
+  <div class="guides-inner">
+    <h2>Official recovery guides</h2>
+    <p class="guides-sub">Always try the official recovery flow first — it has higher success rates than manual attempts.</p>
+    <div class="guides-grid" id="guidesGrid">
+      <div class="guide-card" data-service="gmail">
+        <div class="guide-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         </div>
-
-        <div class="acc-item">
-          <button class="acc-btn" onclick="toggleAccordion(this)">
-            <span class="acc-ico">📸</span>
-            <span>How to recover your Instagram account step by step</span>
-            <span class="acc-arrow">▾</span>
-          </button>
-          <div class="acc-body">
-            <ol>
-              <li>Open Instagram app → tap "Get more help" below the login form</li>
-              <li>Enter your username, email, or phone number linked to the account</li>
-              <li>If you have access to the linked email/phone, choose that option and confirm the code</li>
-              <li>If not, tap <strong>"I can't access this email or phone number"</strong></li>
-              <li>Instagram may offer a <strong>video selfie</strong> verification — this compares your face to tagged photos on the account</li>
-              <li>If you have Facebook linked, you may be able to log in via Facebook</li>
-              <li>Try the generated passwords manually via the normal Instagram login</li>
-            </ol>
-            <p class="tip-note">💡 Tip: The video selfie option has the highest success rate if your face appears in account photos.</p>
-          </div>
+        <h3>Gmail / Google</h3>
+        <ol>
+          <li>Go to <strong>accounts.google.com/signin/recovery</strong></li>
+          <li>Enter your email and click <em>Try a different way</em></li>
+          <li>If you have a trusted device or phone still signed in, confirm there</li>
+          <li>If none work, answer Google's identity questions (account age, recovery email)</li>
+          <li>Use this tool's generated list only as a last resort via the standard sign-in page</li>
+        </ol>
+        <p class="guide-tip">Tip: Try from a device and network you normally used — Google uses location history to verify identity.</p>
+      </div>
+      <div class="guide-card" data-service="instagram">
+        <div class="guide-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
         </div>
-
-        <div class="acc-item">
-          <button class="acc-btn" onclick="toggleAccordion(this)">
-            <span class="acc-ico">🧠</span>
-            <span>Why do we forget passwords?</span>
-            <span class="acc-arrow">▾</span>
-          </button>
-          <div class="acc-body">
-            <p>Most people create passwords using a small set of personal patterns — a familiar name, a meaningful date, and a simple suffix like "123" or "!". Over time we forget which exact combination we used for which account, especially if we had to change it at some point. Pass Predictor reconstructs all realistic variants of your patterns, ranked by how commonly people build passwords.</p>
-          </div>
+        <h3>Instagram</h3>
+        <ol>
+          <li>Open Instagram → tap <em>Get more help</em> below Login</li>
+          <li>Enter your username, email, or phone linked to the account</li>
+          <li>If you have access to the linked email/phone, use that option</li>
+          <li>Otherwise tap <em>I can't access this email or phone number</em></li>
+          <li>Try the video selfie option — it compares you to photos on the account</li>
+        </ol>
+        <p class="guide-tip">Tip: The video selfie verification has the highest success rate if your face appears in account photos.</p>
+      </div>
+      <div class="guide-card" data-service="facebook">
+        <div class="guide-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         </div>
-
-        <div class="acc-item">
-          <button class="acc-btn" onclick="toggleAccordion(this)">
-            <span class="acc-ico">🔒</span>
-            <span>Is my personal data safe here?</span>
-            <span class="acc-arrow">▾</span>
-          </button>
-          <div class="acc-body">
-            <p>Yes — completely. This tool is a static HTML/JS file. <strong>There is no server.</strong> Open your browser's DevTools → Network tab and watch: zero requests are made while using this tool. All processing happens locally in your browser's memory. The moment you close the tab, everything is gone. Nothing is saved, cached, or logged anywhere.</p>
-          </div>
+        <h3>Facebook</h3>
+        <ol>
+          <li>Go to <strong>facebook.com/login/identify</strong></li>
+          <li>Search for your account by name, email, or phone</li>
+          <li>Choose how to receive a reset code (email or SMS)</li>
+          <li>If those options are unavailable, try <em>No longer have access to these?</em></li>
+          <li>Facebook may ask you to identify friends in photos to verify identity</li>
+        </ol>
+        <p class="guide-tip">Tip: If you added a trusted contact to your account previously, they can help you regain access.</p>
+      </div>
+      <div class="guide-card">
+        <div class="guide-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
-
-        <div class="acc-item">
-          <button class="acc-btn" onclick="toggleAccordion(this)">
-            <span class="acc-ico">💡</span>
-            <span>Tips for trying generated passwords efficiently</span>
-            <span class="acc-arrow">▾</span>
-          </button>
-          <div class="acc-body">
-            <ul>
-              <li><strong>Download the list</strong> and keep it open while you try passwords</li>
-              <li>Start with <strong>Most Likely</strong> — passwords scored highest match the most common human patterns</li>
-              <li>Try the top 30 before anything else — the real one is often near the top</li>
-              <li>⚠️ Be careful of <strong>account lockouts</strong> — many platforms lock after 5–10 wrong attempts. Use the official "Forgot Password" flow whenever possible instead of direct login attempts</li>
-              <li>After recovery: immediately set up a <strong>recovery phone number and backup email</strong> so this never happens again</li>
-              <li>Consider using a <strong>free password manager</strong> like Bitwarden going forward</li>
-            </ul>
-          </div>
-        </div>
-
+        <h3>General tips</h3>
+        <ul>
+          <li>Start with the top-ranked passwords in the generated list — they match the most common human patterns</li>
+          <li>Be aware of lockouts: most platforms lock for 24h after 5–10 failed attempts — use official recovery instead</li>
+          <li>After recovering: set a recovery phone and backup email so this never happens again</li>
+          <li>Consider a free password manager like <strong>Bitwarden</strong> going forward</li>
+        </ul>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-logo">🔑 PassPredictor</div>
-      <p class="footer-tag">Free · Private · Offline · No ads · No tracking</p>
-      <p class="footer-disclaimer">For personal account recovery only. Never use this tool to access accounts that don't belong to you. All processing is done locally in your browser.</p>
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <span class="footer-logo">PassPredictor</span>
+      <span class="footer-tagline">Free · Private · No sign-up · Runs offline</span>
     </div>
-  </footer>
+    <p class="footer-legal">For personal account recovery only. Do not use to access accounts that don't belong to you. All processing happens locally in your browser — no data is collected.</p>
+  </div>
+</footer>
 
-  <script src="assets/app.js"></script>
+<script src="assets/app.js"></script>
 </body>
 </html>
