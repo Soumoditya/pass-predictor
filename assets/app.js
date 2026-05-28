@@ -8,6 +8,8 @@ const S = {
   sortMode: 'likely',
   filterMode: 'all',
   showAll: false,
+  running: false,
+  counterId: null,
 };
 
 // ===== Boot =====
@@ -18,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
   bindLivePreview();
   updateLengthDisplay();
+  initScrollReveal();
 });
 
 // ===== Date Selects =====
@@ -140,11 +143,14 @@ function bindEvents() {
   document.getElementById('pwTableBody')?.addEventListener('click', e => {
     const copyBtn = e.target.closest('.copy-cell-btn');
     const pwCell = e.target.closest('.pw-cell');
+    const row = e.target.closest('tr[data-pw]');
     if (copyBtn) {
       const pw = copyBtn.closest('tr')?.dataset.pw;
       if (pw) copyPw(pw);
     } else if (pwCell) {
       pwCell.classList.toggle('vis');
+    } else if (row && !copyBtn) {
+      row.classList.toggle('tried');
     }
   });
 
@@ -158,6 +164,13 @@ function bindEvents() {
   document.getElementById('serviceSelect')?.addEventListener('change', e => {
     if (document.getElementById('resultsWrap') && !document.getElementById('resultsWrap').classList.contains('hidden')) {
       updatePlatformNote(e.target.value);
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!S.running) runGenerate();
     }
   });
 }
@@ -196,8 +209,25 @@ function switchTab(idx) {
     btn.setAttribute('aria-selected', i === idx ? 'true' : 'false');
   });
   document.querySelectorAll('.step-panel').forEach((panel, i) => {
-    panel.classList.toggle('hidden', i !== idx);
+    panel.classList.toggle('active', i === idx);
   });
+}
+
+// ===== Scroll Reveal =====
+function initScrollReveal() {
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('revealed'));
+    return;
+  }
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('[data-reveal]').forEach(el => obs.observe(el));
 }
 
 // ===== Length Display =====
@@ -493,11 +523,15 @@ function strength(pw) {
 
 // ===== Generate =====
 async function runGenerate() {
+  if (S.running) return;
+  S.running = true;
+
   const traits = collectTraits();
   const opts = collectOptions();
 
   if (!Object.values(traits).some(v => v && v.length)) {
     toast('Fill in at least one field to generate passwords.', 'error');
+    S.running = false;
     return;
   }
 
@@ -559,17 +593,19 @@ async function runGenerate() {
   updatePlatformNote(document.getElementById('serviceSelect')?.value || '');
 
   rw?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  S.running = false;
 }
 
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function animateCount(el, target) {
+  if (S.counterId) clearInterval(S.counterId);
   let cur = 0;
   const step = Math.max(1, Math.ceil(target / 60));
-  const id = setInterval(() => {
+  S.counterId = setInterval(() => {
     cur = Math.min(cur + step, target);
     el.textContent = cur.toLocaleString();
-    if (cur >= target) clearInterval(id);
+    if (cur >= target) { clearInterval(S.counterId); S.counterId = null; }
   }, 16);
 }
 
@@ -603,7 +639,7 @@ function renderTable() {
     const rank = start + i + 1;
     const str = strength(pw);
     const vis = S.showAll ? ' vis' : '';
-    return `<tr data-pw="${escAttr(pw)}">
+    return `<tr data-pw="${escAttr(pw)}" style="--i:${i}">
       <td class="pw-rank-cell">${rank}</td>
       <td><span class="pw-cell${vis}">${escHtml(pw)}</span></td>
       <td class="pattern-cell">${escHtml(pattern)}</td>
@@ -716,7 +752,8 @@ function exportFile(format) {
 
 // ===== Reset =====
 function resetTool() {
-  S.scored = []; S.filtered = [];
+  if (S.counterId) { clearInterval(S.counterId); S.counterId = null; }
+  S.scored = []; S.filtered = []; S.running = false;
   document.getElementById('resultsWrap')?.classList.add('hidden');
   document.getElementById('genState')?.classList.add('hidden');
   document.querySelector('.step-tabs')?.classList.remove('hidden');
