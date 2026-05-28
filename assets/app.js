@@ -169,8 +169,10 @@ function bindEvents() {
 
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
       e.preventDefault();
-      if (!S.running) runGenerate();
+      runGenerate();
     }
   });
 }
